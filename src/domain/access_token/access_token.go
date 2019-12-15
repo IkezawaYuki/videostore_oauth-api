@@ -6,7 +6,7 @@ type AccessToken struct {
 	AccessToken string `json:"access_token"`
 	UserID 		int64  `json:"user_id"`
 	ClientID	int64  `json:"client_id"`
-	Expire 		int64  `json:"expire"`
+	Expires 		int64  `json:"expire"`
 }
 
 const (
@@ -18,10 +18,10 @@ func GetNewAccessToken() *AccessToken{
 		AccessToken: "",
 		UserID:      0,
 		ClientID:    0,
-		Expire:      time.Now().UTC().Add(time.Hour * expiration).Unix(),
+		Expires:      time.Now().UTC().Add(time.Hour * expiration).Unix(),
 	}
 }
 
 func (at AccessToken) IsExpired() bool {
-	return false
+	return time.Unix(at.Expires, 0).Before(time.Now().UTC())
 }

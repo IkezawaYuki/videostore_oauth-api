@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/IkezawaYuki/videostore_oauth-api/src/clients/cassandra"
 	"github.com/IkezawaYuki/videostore_oauth-api/src/domain/access_token"
 	"github.com/IkezawaYuki/videostore_oauth-api/src/http"
 	"github.com/IkezawaYuki/videostore_oauth-api/src/repository/db"
@@ -12,8 +13,12 @@ var (
 )
 
 func StartApplication(){
-	atService := access_token.NewService(db.NewRepository())
-	atHandler := http.NewHandler(atService)
+	session, dbErr := cassandra.GetSession()
+	if dbErr != nil{
+		panic(dbErr)
+	}
+	session.Close()
+	atHandler := http.NewHandler(access_token.NewService(db.NewRepository()))
 
 	router.GET("/oauth/access_token/:access_token_id", atHandler.GetByID)
 

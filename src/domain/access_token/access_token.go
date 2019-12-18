@@ -14,7 +14,7 @@ type AccessToken struct {
 	AccessToken string `json:"access_token"`
 	UserID 		int64  `json:"user_id"`
 	ClientID	int64  `json:"client_id"`
-	Expires 		int64  `json:"expire"`
+	Expires 	int64  `json:"expires"`
 }
 
 func (at *AccessToken) Validate() *errors.RestErr{

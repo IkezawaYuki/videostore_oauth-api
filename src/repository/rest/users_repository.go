@@ -2,6 +2,7 @@ package rest
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/IkezawaYuki/videostore_oauth-api/src/domain/users"
 	"github.com/IkezawaYuki/videostore_oauth-api/src/utils/errors"
 	"github.com/mercadolibre/golang-restclient/rest"
@@ -31,6 +32,10 @@ func (r *usersRepository) LoginUser(email string, password string) (*users.User,
 		Email:    email,
 		Password: password,
 	}
+
+	bytes, _ := json.Marshal(request)
+	fmt.Println(string(bytes))
+
 	response := usersRestClient.Post("/users/login", request)
 	if response == nil || response.Response == nil {
 		return nil, errors.NewInternalServerErr("invalid response when trying to login user")

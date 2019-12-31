@@ -1,55 +1,69 @@
 package access_token
 
 import (
-	"github.com/IkezawaYuki/videostore_users-api/utils/errors"
+	"github.com/IkezawaYuki/videostore_oauth-api/src/domain/access_token"
+	"github.com/IkezawaYuki/videostore_oauth-api/src/repository/db"
+	"github.com/IkezawaYuki/videostore_oauth-api/src/repository/rest"
+	"github.com/IkezawaYuki/videostore_oauth-api/src/utils/errors"
 	"strings"
 )
 
-type Repository interface {
-	GetByID(string) (*AccessToken, *errors.RestErr)
-	Create(AccessToken) *errors.RestErr
-	UpdateExpirationTime(AccessToken) *errors.RestErr
-}
+//type Repository interface {
+//	GetByID(string) (*access_token.AccessToken, *errors.RestErr)
+//	Create(access_token.AccessToken) *errors.RestErr
+//	UpdateExpirationTime(access_token.AccessToken) *errors.RestErr
+//}
 
 type Service interface {
-	GetByID(string) (*AccessToken, *errors.RestErr)
-	Create(AccessToken) *errors.RestErr
-	UpdateExpirationTime(AccessToken) *errors.RestErr
+	GetByID(string) (*access_token.AccessToken, *errors.RestErr)
+	Create(access_token.AccessTokenRequest) (*access_token.AccessToken, *errors.RestErr)
+	UpdateExpirationTime(access_token.AccessToken) *errors.RestErr
 }
 
 type service struct {
-	repository Repository
+	restUsersRepo rest.RestUsersRepository
+	dbRepo        db.DbRepository
 }
 
-func NewService(repo Repository) Service {
+func NewService(usersRepo rest.RestUsersRepository, dbRepo db.DbRepository) Service {
 	return &service{
-		repository: repo,
+		restUsersRepo: usersRepo,
+		dbRepo:        dbRepo,
 	}
 }
 
-func (s *service) GetByID(accessTokenID string) (*AccessToken, *errors.RestErr) {
+func (s *service) GetByID(accessTokenID string) (*access_token.AccessToken, *errors.RestErr) {
 	accessTokenID = strings.TrimSpace(accessTokenID)
 	if len(accessTokenID) == 0 {
 		return nil, errors.NewBadRequestErr("invalid access token id")
 	}
-	accessToken, err := s.repository.GetByID(accessTokenID)
+	accessToken, err := s.dbRepo.GetByID(accessTokenID)
 	if err != nil {
 		return nil, err
 	}
 	return accessToken, nil
 }
 
-func (s *service) Create(at AccessToken) *errors.RestErr {
+func (s *service) Create(request access_token.AccessTokenRequest) (*access_token.AccessToken, *errors.RestErr) {
 	if err := at.Validate(); err != nil {
-		return err
+		return nil, err
 	}
+	user, err := s.restUsersRepo.LoginUser(request.Email, request.Password)
+	if err != nil {
+		return nil, err
+	}
+	at := access_token.GetNewAccessToken(user.ID)
+	at.Generate()
 
-	return s.repository.Create(at)
+	if err := s.dbRepo.Create(at); err != nil {
+		return nil, err
+	}
+	return &at, nil
 }
 
-func (s *service) UpdateExpirationTime(at AccessToken) *errors.RestErr {
+func (s *service) UpdateExpirationTime(at access_token.AccessToken) *errors.RestErr {
 	if err := at.Validate(); err != nil {
 		return err
 	}
-	return s.repository.UpdateExpirationTime(at)
+	return s.dbRepo.UpdateExpirationTime(at)
 }

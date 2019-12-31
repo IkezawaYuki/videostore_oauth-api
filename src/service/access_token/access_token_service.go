@@ -45,9 +45,10 @@ func (s *service) GetByID(accessTokenID string) (*access_token.AccessToken, *err
 }
 
 func (s *service) Create(request access_token.AccessTokenRequest) (*access_token.AccessToken, *errors.RestErr) {
-	if err := at.Validate(); err != nil {
+	if err := request.Validate(); err != nil {
 		return nil, err
 	}
+
 	user, err := s.restUsersRepo.LoginUser(request.Email, request.Password)
 	if err != nil {
 		return nil, err

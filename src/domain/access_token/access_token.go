@@ -2,8 +2,8 @@ package access_token
 
 import (
 	"fmt"
-	"github.com/IkezawaYuki/videostore_oauth-api/src/utils/errors"
 	"github.com/IkezawaYuki/videostore_users-api/utils/crypto_utils"
+	"github.com/IkezawaYuki/videostore_utils-go/rest_errors"
 	"strings"
 	"time"
 )
@@ -24,14 +24,14 @@ type AccessTokenRequest struct {
 	ClientSecret string `json:"client_secret"`
 }
 
-func (at *AccessTokenRequest) Validate() *errors.RestErr {
+func (at *AccessTokenRequest) Validate() rest_errors.RestErr {
 	switch at.GrantType {
 	case grantTypePassword:
 		break
 	case grantTypeClientCredentials:
 		break
 	default:
-		return errors.NewBadRequestErr("invalid grant type parameter")
+		return rest_errors.NewBadRequestError("invalid grant type parameter")
 	}
 	return nil
 }
@@ -43,19 +43,19 @@ type AccessToken struct {
 	Expires     int64  `json:"expires"`
 }
 
-func (at *AccessToken) Validate() *errors.RestErr {
+func (at *AccessToken) Validate() rest_errors.RestErr {
 	at.AccessToken = strings.TrimSpace(at.AccessToken)
 	if at.AccessToken == "" {
-		return errors.NewBadRequestErr("invalid access token id")
+		return rest_errors.NewBadRequestError("invalid access token id")
 	}
 	if at.UserID <= 0 {
-		return errors.NewBadRequestErr("invalid user id")
+		return rest_errors.NewBadRequestError("invalid user id")
 	}
 	if at.ClientID <= 0 {
-		return errors.NewBadRequestErr("invalid client id")
+		return rest_errors.NewBadRequestError("invalid client id")
 	}
 	if at.Expires <= 0 {
-		return errors.NewBadRequestErr("invalid expiration id")
+		return rest_errors.NewBadRequestError("invalid expiration id")
 	}
 	return nil
 }

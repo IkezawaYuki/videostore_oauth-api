@@ -15,11 +15,11 @@ type Service interface {
 }
 
 type service struct {
-	restUsersRepo rest.RestUsersRepository
+	restUsersRepo rest.UsersRepository
 	dbRepo        db.DbRepository
 }
 
-func NewService(usersRepo rest.RestUsersRepository, dbRepo db.DbRepository) Service {
+func NewService(usersRepo rest.UsersRepository, dbRepo db.DbRepository) Service {
 	return &service{
 		restUsersRepo: usersRepo,
 		dbRepo:        dbRepo,

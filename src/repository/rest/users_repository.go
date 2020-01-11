@@ -82,6 +82,9 @@ func (r *usersRepository) LoginUser(email string, password string) (*users.User,
 	}
 	var user users.User
 	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, rest_errors.NewInternalServerError("invalid error interface when trying to login user", err)
+	}
 	if err := json.Unmarshal(body, &user); err != nil {
 		return nil, rest_errors.NewInternalServerError("error when trying to unmarshal users response", errors.New("json parsing error"))
 	}
